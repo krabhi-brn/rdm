@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Random Dot Motion Pilot Study</title>
+    <script src="jspsych-6.1.0/jspsych.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-rdk.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-animation.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-fullscreen.js"></script>
+    <script src="jspsych-6.1.0/plugins/jspsych-survey-html-form.js"></script>
+    <link href="jspsych-6.1.0/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+  </head>
+  <body></body>
+  <script>
+    var tno = 0;
+    var rt_data = [];
+    var coh_list = [];
+    var key_list =[];
+    var cr = 0;
+    var incr = 0;
+    var score = 10;
+    var fscore = 0;
+    var flag = 0;
+    var pdetails = [];
+    /*Enter full screen*/
+    var full = {
+      type: 'fullscreen',
+      fullscreen_mode: true
+    };
+    /*Form*/
+    var form_trial = {
+      type: 'survey-html-form',
+      preamble: '<p><strong>Enter your details</strong></p>',
+      html: '<p>Name: <input name="name" type="text" /> Age: <input name="age" type="number" /> Email Id: <input name="emaill" type="email" /></p>',
+      on_finish: function(data){
+        pdetails.push(data.responses);
+      }
+    };
+    /* define welcome message trial */
+    var welcome = {
+      type: "html-keyboard-response",
+      stimulus: "Welcome to <strong>Random Dot Motion Task</strong> experiment.<p>This is a pilot study, the main experiment will come shortly</p><p>Press any key to begin</p>"
+    };
+    /* define instructions trial */
+    var instructions = {
+      type: "html-keyboard-response",
+      stimulus: "<p><strong>Instructions:</strong></p><p></p><p>In this experiment, some randomly moving dots will apperar on the screen for <strong>1.5 seconds</strong> </p><p>If the dots are moving <strong>Left</strong>, " +
+          "press the letter <strong>Z</strong> on the keyboard</p>" +
+          "<p>If the dots are moving <strong>Right</strong>, press the letter <strong>M</strong> on the keyboard"+"<p>You have to respond before the moving dots go away, i.e., within 1.5 sec</p>"+"<p><strong>Be as quick as possible</strong></p>" +
+          "<p>Press <strong>Space</strong> key to begin.</p>",
+      choices: ['Space']
+    };
+    var rdk_trials = {
+      timeline: [
+        {
+          type: 'rdk',
+          post_trial_gap: 0,
+          number_of_dots: 300,
+          coherence: jsPsych.timelineVariable('coh'),
+          choices: ["z","m"],
+          RDK_type: 3,
+          aperture_type: 1,
+          aperture_width: 600,
+          aperture_height: 600,
+          reinsert_type: 1,
+          background_color: "black",
+          coherent_direction: function(){
+            var direction = [0,180];
+            var dir = direction[Math.floor(Math.random() * direction.length)];
+            return dir;
+          },
+          trial_duration: 1500,
+          on_finish: function(data){
+            tno+=1;
+            coh_list.push(data.coherence);
+            key_list.push(data.key_press);
+            rt_data.push(data.rt);
+          }
+        },
+        {
+          type: 'html-keyboard-response',
+          choices: ['Space'],
+          stimulus: function(){
+            var rdk_trial = jsPsych.data.get().last().values()[0];
+            var dir_values = rdk_trial.coherent_direction;
+            var response = "default";
+            if ((rdk_trial.key_press == 90 && dir_values == 180) || (rdk_trial.key_press == 77 && dir_values == 0)){
+              cr+=1;
+              response = "Correct";
+              flag+= 1;
+              fscore = fscore + score;
+              if (flag % 3 == 0){
+                score = score * 2;
+              }
+            }
+            else if ((rdk_trial.key_press == 90 && dir_values == 0) || (rdk_trial.key_press == 77 && dir_values == 180))  {
+              incr+=1;
+              flag = 0;
+              score = 10;
+              response = "Incorrect";
+            }
+            else {
+              response = "No Response";
+            }
+            return "<strong>"+response+" !</strong>";
+          },
+          stimulus_duration: 800,
+          prompt: 'Press space key to continue'
+        },
+      ],
+      timeline_variables: [
+        { coh: 0.1 },
+        { coh: 0.175 },
+        { coh: 0.25 },
+        { coh: 0.325 },
+        { coh: 0.4 },
+        { coh: 0.325 },
+        { coh: 0.25 },
+        { coh: 0.175}
+      ],
+      randomize_order: false,
+      repetitions: 2
+    }
+    var final_rdk_trials = {
+      timeline: [
+        {
+          type: 'rdk',
+          post_trial_gap: 0,
+          number_of_dots: 300,
+          coherence: 0.1,
+          RDK_type: 3,
+          aperture_type: 1,
+          reinsert_type: 1,
+          aperture_width: 600,
+          aperture_height: 600,
+          background_color: "black",
+          coherent_direction: function(){
+            var direction = [0,180];
+            var dir = direction[Math.floor(Math.random() * direction.length)];
+            return dir;
+          },
+          trial_duration: 1500,
+          on_finish: function(data){
+            tno+=1;
+            coh_list.push(data.coherence);
+            key_list.push(data.key_press);
+            rt_data.push(data.rt);
+          }
+        },
+        {
+          type: 'html-keyboard-response',
+          choices: ['Space'],
+          stimulus: function(){
+            var rdk_trial = jsPsych.data.get().last().values()[0];
+            var dir_values = rdk_trial.coherent_direction;
+            var response = "default";
+            if ((rdk_trial.key_press == 90 && dir_values == 180) || (rdk_trial.key_press == 77 && dir_values == 0)){
+              cr+=1;
+              response = "Correct";
+              flag+= 1;
+              fscore = fscore + score;
+              if (flag % 3 == 0){
+                score = score * 2;
+              }
+            }
+            else {
+              incr+=1;
+              flag = 0;
+              score = 10;
+              response = "Incorrect";
+            }
+            return "<strong>"+response+" !</strong>";
+          },
+          stimulus_duration: 800,
+          prompt: 'Press space key to continue'
+        },
+      ],
+    }
+    var thank = {
+      type: "html-keyboard-response",
+      stimulus: "<strong>Thank You for your participation!</strong>",
+      prompt: 'You will soon receive a link for the main experiment.'
+    };
+    var not_full = {
+      type: 'fullscreen',
+      fullscreen_mode: false
+    };
+
+    jsPsych.init({
+      timeline: [full, form_trial, welcome, instructions, rdk_trials, final_rdk_trials, thank, not_full],
+      on_finish: function() {
+        pdetails.push(cr, incr, fscore);
+        console.log(pdetails);
+        console.log(tno);
+        console.log(coh_list);
+        console.log(key_list);
+        console.log(rt_data);
+        let csvContent = "data:text/csv;charset=utf-8," 
+        + pdetails.map(e => e.join(",")).join("\n");
+       }
+    }); 
+      document.write("IIT-Kanpur | CBCS-Allahabad");
+  </script>
+</html>
