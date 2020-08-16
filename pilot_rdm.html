@@ -119,7 +119,7 @@
         { coh: 0.175}
       ],
       randomize_order: false,
-      repetitions: 2
+      repetitions: 20
     }
     var final_rdk_trials = {
       timeline: [
@@ -194,9 +194,13 @@
         console.log(tno);
         console.log(coh_list);
         console.log(key_list);
-        console.log(rt_data);
-        let csvContent = "data:text/csv;charset=utf-8," 
-        + pdetails.map(e => e.join(",")).join("\n");
+        console.log(rt_data); 
+        var dat = {"pdetails" : pdetails, "cohvalues" : coh_list, "keys" : key_list, "RTs" : rt_data};
+        var dictstring = JSON.stringify(dat);
+        var fs = require('fs');
+        fs.writeFile("pdata1.json", dictstring, function(err, result){
+          if(err) console.log('error', err);
+        });
        }
     }); 
       document.write("IIT-Kanpur | CBCS-Allahabad");
